@@ -1,0 +1,41 @@
+#!/usr/bin/env ruby
+
+require 'erubi'
+require 'erubi/capture_end'
+require 'tilt'
+autoload :YAML, 'yaml'
+
+class Runner
+  def run
+    transform('config.yml')
+  end
+
+  def transform(output_file_name)
+    contents = <<-EOT
+# GENERATED FILE - DO NOT EDIT.
+# Run ./.evergreen/update-evergreen-configs to regenerate this file.
+
+EOT
+
+    template_path = File.join(File.dirname(__FILE__), 'config/common.yml.erb')
+    #contents << ERB.new(File.read(template_path)).result(get_binding)
+    contents << Tilt.new(template_path, engine_class: Erubi::CaptureEndEngine).render(self)
+
+    template_path = File.join(File.dirname(__FILE__), 'config/axes.yml.erb')
+    contents << Tilt.new(template_path, engine_class: Erubi::CaptureEndEngine).render(self)
+
+    template_path = File.join(File.dirname(__FILE__), 'config/standard.yml.erb')
+    contents << Tilt.new(template_path, engine_class: Erubi::CaptureEndEngine).render(self)
+
+    output_path = File.join(File.dirname(__FILE__), output_file_name)
+    File.open(output_path, 'w') do |f|
+      f << contents
+    end
+  end
+
+  def get_binding
+    binding
+  end
+end
+
+Runner.new.run

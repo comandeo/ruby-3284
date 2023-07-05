@@ -1,0 +1,9 @@
+# rubocop:todo all
+source "https://rubygems.org"
+gemspec path: '..'
+
+gem 'zstd-ruby'
+
+require_relative './standard'
+
+standard_dependencies
